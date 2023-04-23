@@ -14,15 +14,15 @@ import numpy as np
 class mywindow(QtWidgets.QMainWindow):
 
     def init_combo_box(self):
-        self.ui.comboBox.addItem("выберите звание")
-        self.ui.comboBox_2.addItem("выберите год поступления")
+        self.ui.comboBox.addItem("Выберите звание")
+        self.ui.comboBox_2.addItem("Выберите год поступления")
 
         self.posts = [
-            "рядовой",
-            "сержант",
-            "майор",
-            "полковник",
-            "генерал"
+            "Рядовой",
+            "Сержант",
+            "Майор",
+            "Полковник",
+            "Генерал"
         ]
         self.ui.comboBox.addItems(self.posts)
 
@@ -34,9 +34,9 @@ class mywindow(QtWidgets.QMainWindow):
         model.setHeaderData(2, QtCore.Qt.Horizontal, "Фамилия")
         model.setHeaderData(3, QtCore.Qt.Horizontal, "Имя")
         model.setHeaderData(4, QtCore.Qt.Horizontal, "Отчество")
-        model.setHeaderData(5, QtCore.Qt.Horizontal, "звание")
-        model.setHeaderData(6, QtCore.Qt.Horizontal, "год поступления")
-        model.setHeaderData(7, QtCore.Qt.Horizontal, "зарплата")
+        model.setHeaderData(5, QtCore.Qt.Horizontal, "Звание")
+        model.setHeaderData(6, QtCore.Qt.Horizontal, "Год поступления")
+        model.setHeaderData(7, QtCore.Qt.Horizontal, "Зарплата (рубли)")
 
 
     def connect(self):
@@ -54,13 +54,23 @@ class mywindow(QtWidgets.QMainWindow):
         self.set_header(self.soldat_model)
 
         self.ui.tableView.setModel(self.soldat_model)
+
+
         self.ui.tableView.setColumnHidden(0, True)
         self.ui.tableView.setColumnHidden(1, True)
+
+        self.ui.tableView_2.setColumnHidden(0, True)
+        self.ui.tableView_2.setColumnHidden(1, True)
 
     def __init__(self):
         super(mywindow, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+
+        self.ba = QByteArray()
+
+        header = self.ui.tableView.horizontalHeader()
+        #header.setSectionResizeMode(6, QtWidgets.QHeaderView.ResizeToContents)
 
         self.connect()
         self.init_combo_box()
@@ -80,7 +90,7 @@ class mywindow(QtWidgets.QMainWindow):
 
     def clear_gui(self):
         self.ui.label.clear()
-        del self.ba
+        self.ba = QByteArray()
 
         self.ui.lineEdit.clear()
         self.ui.lineEdit_2.clear()
@@ -150,7 +160,7 @@ class mywindow(QtWidgets.QMainWindow):
         query.exec()
 
         if (query.lastError().number() != -1):
-            QMessageBox.about(self, "ошибка", f"{query.lastError().text()}")
+            QMessageBox.about(self, "Ошибка", f"{query.lastError().text()}")
             return
 
         self.clear_gui()
@@ -161,7 +171,7 @@ class mywindow(QtWidgets.QMainWindow):
         query.exec(f"delete from soldat where id = {int(self.soldat_model.data(self.soldat_model.index(self.ui.tableView.currentIndex().row(), 0)))}")
 
         if (query.lastError().number() != -1):
-            QMessageBox.about(self, "ошибка", f"{query.lastError().text()}")
+            QMessageBox.about(self, "Ошибка", f"{query.lastError().text()}")
             return
 
         self.soldat_model.setQuery(self.soldat_model.query().lastQuery())
@@ -169,7 +179,7 @@ class mywindow(QtWidgets.QMainWindow):
 
     def update(self):
         if self.empty():
-            QMessageBox.about(self, "ошибка", "не все поля заполнены")
+            QMessageBox.about(self, "Ошибка", "Не все поля заполнены")
             return
         lname = self.ui.lineEdit.text()
         fname = self.ui.lineEdit_2.text()
@@ -188,7 +198,7 @@ class mywindow(QtWidgets.QMainWindow):
         query.exec()
 
         if (query.lastError().number() != -1):
-            QMessageBox.about(self, "ошибка", f"{query.lastError().text()}")
+            QMessageBox.about(self, "Ошибка", f"{query.lastError().text()}")
             return
 
         self.clear_gui()
@@ -200,11 +210,11 @@ class mywindow(QtWidgets.QMainWindow):
 
 
         if radioButton.isChecked():
-            if radioButton.text() == "фамилия":
+            if radioButton.text() == "Фамилия":
                 order_model.setQuery("select * from soldat order by l asc")
-            elif radioButton.text() == "звание(алфавитный порядок)":
+            elif radioButton.text() == "Звание (алфавитный порядок)":
                 order_model.setQuery("select * from soldat order by post asc")
-            elif radioButton.text() == "зарплата":
+            elif radioButton.text() == "Зарплата":
                 order_model.setQuery("select * from soldat order by salary asc")
 
         self.set_header(order_model)
@@ -219,11 +229,13 @@ class mywindow(QtWidgets.QMainWindow):
         query.exec(f"select  count(*) from soldat where l like '{find_name}%'")
         query.first()
         if int(query.value(0)) == 0:
-            QMessageBox.about(self, "ошибка", "такого человека нет")
+            QMessageBox.about(self, "Ошибка", "Такого человека нет")
             return
 
         find_model = QSqlQueryModel()
         find_model.setQuery(f"select * from soldat where l like '{find_name}%'")
+
+        self.set_header(find_model)
 
         self.ui.tableView_2.setModel(find_model)
         self.ui.tableView_2.setColumnHidden(0, True)
